@@ -20,7 +20,7 @@ object Txn {
    *  the transaction context `t`, `None` otherwise.  If an implicit `InTxn` is
    *  available it may be used.
    */
-  def findCurrent(implicit mt: MaybeTxn): Option[InTxn] = STMImpl.instance.findCurrent
+  def findCurrent(implicit mt: MaybeTxn, impl: STMImpl): Option[InTxn] = impl.findCurrent
 
 
   //////////// status

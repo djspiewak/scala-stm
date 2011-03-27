@@ -2,6 +2,7 @@
 
 package scala.concurrent.stm
 
+import impl.STMImpl
 import scala.collection.{immutable, mutable, generic}
 
 
@@ -44,10 +45,11 @@ object TSet {
   
 
   /** Constructs and returns a new empty `TSet`. */
-  def empty[A]: TSet[A] = impl.STMImpl.instance.newTSet[A]
+  def empty[A](implicit impl: STMImpl): TSet[A] = impl.newTSet[A]
 
   /** Returns a builder of `TSet`. */
-  def newBuilder[A]: mutable.Builder[A, TSet[A]] = impl.STMImpl.instance.newTSetBuilder[A]
+  def newBuilder[A](implicit impl: STMImpl): mutable.Builder[A, TSet[A]] = 
+    impl.newTSetBuilder[A]
 
   /** Constructs and returns a new `TSet` that will contain the elements from
    *  `xs`.

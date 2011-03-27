@@ -73,18 +73,18 @@ class MaybeTxnSuite extends FunSuite {
     val n0 = atomic { t =>
       t0 = t
       assert(Txn.findCurrent === Some(t))
-      assert(impl.STMImpl.instance.findCurrent === Some(t))
+      assert(implicitly[impl.STMImpl].findCurrent === Some(t))
       NestingLevel.root
     }
     assert(n0.status === Txn.Committed)
     assert(Txn.findCurrent === None)
-    assert(impl.STMImpl.instance.findCurrent === None)
+    assert(implicitly[impl.STMImpl].findCurrent === None)
     atomic { t =>
       assert(NestingLevel.current(t) != n0)
       assert(NestingLevel.root(t).status === Txn.Active)
       assert(Txn.status === Txn.Active)
       assert(Txn.findCurrent === Some(t))
-      assert(impl.STMImpl.instance.findCurrent === Some(t))
+      assert(implicitly[impl.STMImpl].findCurrent === Some(t))
     }
   }
 }

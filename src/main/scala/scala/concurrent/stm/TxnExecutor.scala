@@ -2,12 +2,13 @@
 
 package scala.concurrent.stm
 
+import impl.STMImpl
 import actors.threadpool.TimeUnit
 
 
 /** `object TxnExecutor` manages the system-wide default `TxnExecutor`. */
 object TxnExecutor {
-  @volatile private var _default: TxnExecutor = impl.STMImpl.instance
+  @volatile private var _default: TxnExecutor = implicitly[STMImpl]
 
   /** Returns the default `TxnExecutor`. */
   def defaultAtomic: TxnExecutor = _default

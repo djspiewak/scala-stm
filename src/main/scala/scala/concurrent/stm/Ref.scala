@@ -12,7 +12,7 @@ import reflect.{AnyValManifest, OptManifest}
  */
 object Ref extends RefCompanion {
 
-  protected def factory: RefFactory = STMImpl.instance
+  protected def factory(implicit impl: STMImpl): RefFactory = impl
 
   /** `Ref.View` provides access to the contents of a `Ref` without requiring
    *  that an implicit `InTxn` be available.  When called from within the
@@ -169,7 +169,7 @@ object Ref extends RefCompanion {
 
 trait RefCompanion {
   
-  protected def factory: RefFactory
+  protected def factory(implicit impl: STMImpl): RefFactory
 
   /** Returns a `Ref` instance that manages a newly allocated memory location
    *  holding values of type `A`.  If you have an initial value `v0` available,

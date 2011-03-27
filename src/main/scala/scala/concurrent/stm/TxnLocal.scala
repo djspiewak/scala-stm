@@ -2,6 +2,7 @@
 
 package scala.concurrent.stm
 
+import impl.STMImpl
 
 object TxnLocal {
   /** Returns a new transaction-local that holds values of type `A`.  One
@@ -58,9 +59,8 @@ object TxnLocal {
                whileCommitting: InTxnEnd => Unit = null,
                afterCommit: A => Unit = null,
                afterRollback: Txn.Status => Unit = null,
-               afterCompletion: Txn.Status => Unit = null): TxnLocal[A] = {
-    impl.STMImpl.instance.newTxnLocal(
-      init, initialValue, beforeCommit, whilePreparing, whileCommitting, afterCommit, afterRollback, afterCompletion)
+               afterCompletion: Txn.Status => Unit = null)(implicit impl: STMImpl): TxnLocal[A] = {
+    impl.newTxnLocal(init, initialValue, beforeCommit, whilePreparing, whileCommitting, afterCommit, afterRollback, afterCompletion)
   }
 }
 

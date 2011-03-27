@@ -3,6 +3,7 @@
 package scala.concurrent.stm
 package skel
 
+import impl.STMImpl
 import annotation.tailrec
 
 /** `TxnHashTrie` implements a transactional mutable hash trie using Ref-s,
@@ -473,23 +474,23 @@ private[skel] abstract class TxnHashTrie[A, B](protected var root: Ref.View[TxnH
 
   //////////////// whole-trie operations on Ref.View
 
-  protected def singleIsEmpty: Boolean = impl.STMImpl.instance.dynCurrentOrNull match {
+  protected def singleIsEmpty(implicit impl: STMImpl): Boolean = impl.dynCurrentOrNull match {
     case null => frozenRoot.cappedSize(1) == 0
     case txn => txnIsEmpty(txn)
   }
 
   protected def singleSize: Int = frozenRoot.cappedSize(Int.MaxValue)
 
-  protected def singleSetForeach[U](f: A => U) {
+  protected def singleSetForeach[U](f: A => U)(implicit impl: STMImpl) {
     // don't freeze the root if we use .single in a txn
-    impl.STMImpl.instance.dynCurrentOrNull match {
+    impl.dynCurrentOrNull match {
       case null => frozenRoot.setForeach(f)
       case txn => txnSetForeach(f)(txn)
     }
   }
 
-  protected def singleMapForeach[U](f: ((A, B)) => U) {
-    impl.STMImpl.instance.dynCurrentOrNull match {
+  protected def singleMapForeach[U](f: ((A, B)) => U)(implicit impl: STMImpl) {
+    impl.dynCurrentOrNull match {
       case null => frozenRoot.mapForeach(f)
       case txn => txnMapForeach(f)(txn)
     }

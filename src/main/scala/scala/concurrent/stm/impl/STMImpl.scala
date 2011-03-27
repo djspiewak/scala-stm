@@ -3,13 +3,8 @@
 package scala.concurrent.stm
 package impl
 
-private[stm] object STMImpl {
-
-  private def instanceClassName: String = System.getProperty("scala.stm.impl", "scala.concurrent.stm.ccstm.CCSTM")
-
-  private def instanceClass = Class.forName(instanceClassName)
-
-  val instance: STMImpl = instanceClass.newInstance.asInstanceOf[STMImpl]
+object STMImpl {
+  implicit val instance = new ccstm.CCSTM   // TODO catch indirect calls inside the API
 }
 
 /** `STMImpl` gathers all of the functionality required to plug an STM

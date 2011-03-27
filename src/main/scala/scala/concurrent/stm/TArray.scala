@@ -2,6 +2,7 @@
 
 package scala.concurrent.stm
 
+import impl.STMImpl
 import scala.collection.{mutable, immutable}
 
 object TArray {
@@ -44,10 +45,12 @@ object TArray {
   /** Returns a new `TArray[A]` containing `length` copies of the default value
    *  for elements of type `A`.
    */
-  def ofDim[A : ClassManifest](length: Int): TArray[A] = impl.STMImpl.instance.newTArray[A](length)
+  def ofDim[A](length: Int)(implicit impl: STMImpl, m: ClassManifest[A]): TArray[A] =
+    impl.newTArray[A](length)
 
   /** Returns a new `TArray[A]` containing the elements of `data`. */
-  def apply[A : ClassManifest](data: TraversableOnce[A]): TArray[A] = impl.STMImpl.instance.newTArray[A](data)
+  def apply[A](data: TraversableOnce[A])(implicit impl: STMImpl, m: ClassManifest[A]): TArray[A] =
+    impl.newTArray[A](data)
 }
 
 /** Bulk transactional storage, roughly equivalent to `Array[Ref[T]]` but

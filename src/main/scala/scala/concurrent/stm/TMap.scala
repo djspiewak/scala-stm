@@ -2,6 +2,7 @@
 
 package scala.concurrent.stm
 
+import impl.STMImpl
 import scala.collection.{immutable, mutable, generic}
 import mutable.Iterable
 
@@ -44,10 +45,10 @@ object TMap {
 
 
   /** Constructs and returns a new empty `TMap`. */
-  def empty[A, B]: TMap[A, B] = impl.STMImpl.instance.newTMap[A, B]
+  def empty[A, B](implicit impl: STMImpl): TMap[A, B] = impl.newTMap[A, B]
 
   /** Returns a builder of `TMap`. */
-  def newBuilder[A, B]: mutable.Builder[(A, B), TMap[A, B]] = impl.STMImpl.instance.newTMapBuilder[A, B]
+  def newBuilder[A, B](implicit impl: STMImpl): mutable.Builder[(A, B), TMap[A, B]] = impl.newTMapBuilder[A, B]
 
   /** Constructs and returns a new `TMap` that will contain the key/value pairs
    *  from `kvs`.

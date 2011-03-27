@@ -28,7 +28,10 @@ class RefFactorySuite extends FunSuite {
   }
 
   object TestRef extends RefCompanion {
-    var factory: RefFactory = null
+    private var _factory: RefFactory = null
+    
+    def factory(implicit impl: STMImpl) = _factory
+    def factory_=(fac: RefFactory) = _factory = fac
   }
 
   test("signature specialization") {
