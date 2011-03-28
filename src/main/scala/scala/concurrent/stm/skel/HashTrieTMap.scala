@@ -3,13 +3,14 @@
 package scala.concurrent.stm
 package skel
 
+import impl.STMImpl
 import scala.collection.mutable.Builder
 
 private[stm] object HashTrieTMap {
   
-  def empty[A, B]: TMap[A, B] = new HashTrieTMap(Ref(TxnHashTrie.emptyMapNode[A, B]).single)
+  def empty[A, B](implicit impl: STMImpl): TMap[A, B] = new HashTrieTMap(Ref(TxnHashTrie.emptyMapNode[A, B]).single)
 
-  def newBuilder[A, B] = new Builder[(A, B), TMap[A, B]] {
+  def newBuilder[A, B](implicit impl: STMImpl) = new Builder[(A, B), TMap[A, B]] {
     var root = TxnHashTrie.emptyMapBuildingNode[A, B]
 
     def clear() { root = TxnHashTrie.emptyMapBuildingNode[A, B] }
@@ -24,8 +25,8 @@ private[stm] object HashTrieTMap {
   }
 }
 
-private[skel] class HashTrieTMap[A, B] private (root0: Ref.View[TxnHashTrie.Node[A, B]]
-                                                 ) extends TxnHashTrie[A, B](root0) with TMapViaClone[A, B] {
+private[skel] class HashTrieTMap[A, B] private (root0: Ref.View[TxnHashTrie.Node[A, B]])(implicit val impl: STMImpl)
+    extends TxnHashTrie[A, B](root0) with TMapViaClone[A, B] {
 
   //// construction
 

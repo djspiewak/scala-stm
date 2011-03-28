@@ -4,7 +4,7 @@ package scala.concurrent.stm
 package impl
 
 object STMImpl {
-  implicit val instance = new ccstm.CCSTM   // TODO catch indirect calls inside the API
+  implicit val instance = new ccstm.CCSTM
 }
 
 /** `STMImpl` gathers all of the functionality required to plug an STM

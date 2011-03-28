@@ -175,7 +175,7 @@ trait RefCompanion {
    *  holding values of type `A`.  If you have an initial value `v0` available,
    *  `Ref(v0)` should be preferred.
    */
-  def make[A]()(implicit om: OptManifest[A]): Ref[A] = (om match {
+  def make[A]()(implicit impl: STMImpl, om: OptManifest[A]): Ref[A] = (om match {
     case m: ClassManifest[_] => m.newArray(0).asInstanceOf[AnyRef] match {
       // these can be reordered, so long as Unit comes before AnyRef
       case _: Array[Boolean] => apply(false)
@@ -202,13 +202,13 @@ trait RefCompanion {
    *    val list2 = Ref[List[String]](Nil)  // creates a Ref[List[String]]
    *  }}}
    */
-  def apply[A](initialValue: A)(implicit om: OptManifest[A]): Ref[A] = om match {
+  def apply[A](initialValue: A)(implicit impl: STMImpl, om: OptManifest[A]): Ref[A] = om match {
     case m: AnyValManifest[_] => newPrimitiveRef(initialValue, m.asInstanceOf[AnyValManifest[A]])
     case m: ClassManifest[_] => factory.newRef(initialValue)(m.asInstanceOf[ClassManifest[A]])
     case _ => factory.newRef[Any](initialValue).asInstanceOf[Ref[A]]
   }
 
-  private def newPrimitiveRef[A](initialValue: A, m: AnyValManifest[A]): Ref[A] = {
+  private def newPrimitiveRef[A](initialValue: A, m: AnyValManifest[A])(implicit impl: STMImpl): Ref[A] = {
     (m.newArray(0).asInstanceOf[AnyRef] match {
       case _: Array[Int]     => apply(initialValue.asInstanceOf[Int])
       case _: Array[Boolean] => apply(initialValue.asInstanceOf[Boolean])
@@ -222,15 +222,15 @@ trait RefCompanion {
     }).asInstanceOf[Ref[A]]
   }
 
-  def apply(initialValue: Boolean): Ref[Boolean] = factory.newRef(initialValue)
-  def apply(initialValue: Byte   ): Ref[Byte]    = factory.newRef(initialValue)
-  def apply(initialValue: Short  ): Ref[Short]   = factory.newRef(initialValue)
-  def apply(initialValue: Char   ): Ref[Char]    = factory.newRef(initialValue)
-  def apply(initialValue: Int    ): Ref[Int]     = factory.newRef(initialValue)
-  def apply(initialValue: Long   ): Ref[Long]    = factory.newRef(initialValue)
-  def apply(initialValue: Float  ): Ref[Float]   = factory.newRef(initialValue)
-  def apply(initialValue: Double ): Ref[Double]  = factory.newRef(initialValue)
-  def apply(initialValue: Unit   ): Ref[Unit]    = factory.newRef(initialValue)
+  def apply(initialValue: Boolean)(implicit impl: STMImpl): Ref[Boolean] = factory.newRef(initialValue)
+  def apply(initialValue: Byte   )(implicit impl: STMImpl): Ref[Byte]    = factory.newRef(initialValue)
+  def apply(initialValue: Short  )(implicit impl: STMImpl): Ref[Short]   = factory.newRef(initialValue)
+  def apply(initialValue: Char   )(implicit impl: STMImpl): Ref[Char]    = factory.newRef(initialValue)
+  def apply(initialValue: Int    )(implicit impl: STMImpl): Ref[Int]     = factory.newRef(initialValue)
+  def apply(initialValue: Long   )(implicit impl: STMImpl): Ref[Long]    = factory.newRef(initialValue)
+  def apply(initialValue: Float  )(implicit impl: STMImpl): Ref[Float]   = factory.newRef(initialValue)
+  def apply(initialValue: Double )(implicit impl: STMImpl): Ref[Double]  = factory.newRef(initialValue)
+  def apply(initialValue: Unit   )(implicit impl: STMImpl): Ref[Unit]    = factory.newRef(initialValue)
 }
 
 /** Provides access to a single element of type ''A''.  Accesses are

@@ -8,13 +8,16 @@ import scala.collection.{immutable, mutable, generic}
 
 object TSet {
 
-  object View extends generic.MutableSetFactory[TSet.View] {
+  // TODO should be an object
+  object View {
+    implicit def canBuildFrom[A](implicit impl: STMImpl): generic.CanBuildFrom[TSet.View[_], A, TSet.View[A]] = new generic.CanBuildFrom[TSet.View[_], A, TSet.View[A]] {
+      def apply() = newBuilder[A]
+      def apply(from: TSet.View[_]) = apply()
+    }
 
-    implicit def canBuildFrom[A]: generic.CanBuildFrom[Coll, A, TSet.View[A]] = setCanBuildFrom[A]
+    def empty[A](implicit impl: STMImpl) = TSet.empty[A].single
 
-    override def empty[A] = TSet.empty[A].single
-
-    override def newBuilder[A] = new mutable.Builder[A, View[A]] {
+    def newBuilder[A](implicit impl: STMImpl) = new mutable.Builder[A, View[A]] {
       private val underlying = TSet.newBuilder[A]
 
       def clear() { underlying.clear() }
@@ -22,11 +25,12 @@ object TSet {
       def result() = underlying.result().single
     }
 
-    override def apply[A](xs: A*): TSet.View[A] = (TSet.newBuilder[A] ++= xs).result().single
+    def apply[A](xs: A*)(implicit impl: STMImpl): TSet.View[A] = (TSet.newBuilder[A] ++= xs).result().single
   }
 
   /** A `Set` that provides atomic execution of all of its methods. */
   trait View[A] extends mutable.Set[A] with mutable.SetLike[A, View[A]] {
+    implicit val impl: STMImpl
 
     /** Returns the `TSet` perspective on this transactional set, which
      *  provides set functionality only inside atomic blocks.
@@ -39,7 +43,6 @@ object TSet {
     def snapshot: immutable.Set[A]
 
     override def empty: View[A] = TSet.empty[A].single
-    override def companion: generic.GenericCompanion[View] = View    
     override protected[this] def newBuilder: mutable.Builder[A, View[A]] = View.newBuilder[A]
   }
   
@@ -54,7 +57,7 @@ object TSet {
   /** Constructs and returns a new `TSet` that will contain the elements from
    *  `xs`.
    */
-  def apply[A](xs: A*): TSet[A] = (newBuilder[A] ++= xs).result()
+  def apply[A](xs: A*)(implicit impl: STMImpl): TSet[A] = (newBuilder[A] ++= xs).result()
 
 
   /** Allows a `TSet` in a transactional context to be used as a `Set`. */

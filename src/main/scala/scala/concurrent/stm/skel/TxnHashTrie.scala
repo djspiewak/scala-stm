@@ -42,7 +42,8 @@ private[skel] object TxnHashTrie {
 
   //////// shared instances
   
-  val emptyLeaf = new Leaf[Any, Unit](Array.empty[Int], Array.empty[AnyRef])
+  // TODO should be a val
+  def emptyLeaf(implicit impl: STMImpl) = new Leaf[Any, Unit](Array.empty[Int], Array.empty[AnyRef])
 
   //////// publicly-visible stuff
 
@@ -64,7 +65,7 @@ private[skel] object TxnHashTrie {
 
   /** If used by a Set, values will be null. */
   final class Leaf[A, B](val hashes: Array[Int],
-                         val kvs: Array[AnyRef]) extends Node[A, B] with BuildingNode[A, B] {
+                         val kvs: Array[AnyRef])(implicit impl: STMImpl) extends Node[A, B] with BuildingNode[A, B] {
 
     def endBuild = this
 
@@ -286,7 +287,7 @@ private[skel] object TxnHashTrie {
     }
   }
 
-  class BuildingBranch[A, B](val children: Array[BuildingNode[A, B]]) extends BuildingNode[A, B] {
+  class BuildingBranch[A, B](val children: Array[BuildingNode[A, B]])(implicit impl: STMImpl) extends BuildingNode[A, B] {
     def endBuild: Node[A, B] = {
       val refs = new Array[Ref.View[Node[A, B]]](BF)
       var i = 0
@@ -298,7 +299,7 @@ private[skel] object TxnHashTrie {
     }
   }
 
-  class Branch[A, B](val gen: Long, val frozen: Boolean, val children: Array[Ref.View[Node[A, B]]]) extends Node[A, B] {
+  class Branch[A, B](val gen: Long, val frozen: Boolean, val children: Array[Ref.View[Node[A, B]]])(implicit impl: STMImpl) extends Node[A, B] {
     // size may only be called on a frozen branch, so we can cache the result
     private var _cachedSize = -1
 
@@ -358,7 +359,7 @@ private[skel] object TxnHashTrie {
       }
     }
 
-    private abstract class Iter[Z] extends Iterator[Z] {
+    private abstract class Iter[Z](implicit impl: STMImpl) extends Iterator[Z] {
 
       def childIter(c: Node[A, B]): Iterator[Z]
 
@@ -403,11 +404,11 @@ private[skel] object TxnHashTrie {
 
   //////////////// construction
 
-  def emptySetNode[A]: SetNode[A] = emptyLeaf.asInstanceOf[SetNode[A]]
-  def emptyMapNode[A, B]: Node[A, B] = emptyLeaf.asInstanceOf[Node[A, B]]
+  def emptySetNode[A](implicit impl: STMImpl): SetNode[A] = emptyLeaf.asInstanceOf[SetNode[A]]
+  def emptyMapNode[A, B](implicit impl: STMImpl): Node[A, B] = emptyLeaf.asInstanceOf[Node[A, B]]
 
-  def emptySetBuildingNode[A]: SetBuildingNode[A] = emptyLeaf.asInstanceOf[SetBuildingNode[A]]
-  def emptyMapBuildingNode[A, B]: BuildingNode[A, B] = emptyLeaf.asInstanceOf[BuildingNode[A, B]]
+  def emptySetBuildingNode[A](implicit impl: STMImpl): SetBuildingNode[A] = emptyLeaf.asInstanceOf[SetBuildingNode[A]]
+  def emptyMapBuildingNode[A, B](implicit impl: STMImpl): BuildingNode[A, B] = emptyLeaf.asInstanceOf[BuildingNode[A, B]]
 
   def buildingAdd[A](root: SetBuildingNode[A], x: A): SetBuildingNode[A] = buildingPut(root, 0, keyHash(x), x, null)
   def buildingPut[A, B](root: BuildingNode[A, B], k: A, v: B): BuildingNode[A, B] = buildingPut(root, 0, keyHash(k), k, v)
@@ -427,7 +428,7 @@ private[skel] object TxnHashTrie {
   }
 }
 
-private[skel] abstract class TxnHashTrie[A, B](protected var root: Ref.View[TxnHashTrie.Node[A, B]]) {
+private[skel] abstract class TxnHashTrie[A, B](protected var root: Ref.View[TxnHashTrie.Node[A, B]])(implicit impl: STMImpl) {
   import TxnHashTrie._
 
   //////////////// txn contention tracking

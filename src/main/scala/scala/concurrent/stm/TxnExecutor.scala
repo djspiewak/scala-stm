@@ -8,7 +8,7 @@ import actors.threadpool.TimeUnit
 
 /** `object TxnExecutor` manages the system-wide default `TxnExecutor`. */
 object TxnExecutor {
-  @volatile private var _default: TxnExecutor = implicitly[STMImpl]
+  @volatile private var _default: TxnExecutor = STMImpl.instance    // TODO this is nasty and partially defeats the purpose
 
   /** Returns the default `TxnExecutor`. */
   def defaultAtomic: TxnExecutor = _default

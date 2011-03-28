@@ -3,6 +3,7 @@
 package scala.concurrent.stm
 package skel
 
+import impl.STMImpl
 import scala.collection.{immutable, mutable}
 
 private[stm] object TSetViaClone {

@@ -6,6 +6,7 @@ package ccstm
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
 
 private[ccstm] object CCSTMRefs {
+  import impl.STMImpl._   // explicitly bring in the CCSTM implicit factory
   
   trait Factory extends impl.RefFactory {
     def newRef(v0: Boolean): Ref[Boolean] = new BooleanRef(v0)

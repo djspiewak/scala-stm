@@ -3,19 +3,23 @@
 package scala.concurrent.stm
 
 import impl.STMImpl
+
 import scala.collection.{immutable, mutable, generic}
+import generic.CanBuildFrom
 import mutable.Iterable
 
 
 object TMap {
 
-  object View extends generic.MutableMapFactory[TMap.View] {
+  object View {
+    implicit def canBuildFrom[A, B](implicit impl: STMImpl): generic.CanBuildFrom[TMap.View[_, _], (A, B), TMap.View[A, B]] = new CanBuildFrom[TMap.View[_, _], (A, B), TMap.View[A, B]] {
+      def apply() = newBuilder[A, B]
+      def apply(from: TMap.View[_, _]) = apply()
+    }
 
-    implicit def canBuildFrom[A, B]: generic.CanBuildFrom[Coll, (A, B), TMap.View[A, B]] = new MapCanBuildFrom[A, B]
+    def empty[A, B](implicit impl: STMImpl) = TMap.empty[A, B].single
 
-    def empty[A, B] = TMap.empty[A, B].single
-
-    override def newBuilder[A, B] = new mutable.Builder[(A, B), View[A, B]] {
+    def newBuilder[A, B](implicit impl: STMImpl) = new mutable.Builder[(A, B), View[A, B]] {
       private val underlying = TMap.newBuilder[A, B]
 
       def clear() { underlying.clear() }
@@ -23,11 +27,14 @@ object TMap {
       def result() = underlying.result().single
     }
 
-    override def apply[A, B](kvs: (A, B)*): TMap.View[A, B] = (TMap.newBuilder[A, B] ++= kvs).result().single
+    def apply[A, B](kvs: (A, B)*)(implicit impl: STMImpl): TMap.View[A, B] =
+      (TMap.newBuilder[A, B] ++= kvs).result().single
   }
 
   /** A `Map` that provides atomic execution of all of its methods. */
   trait View[A, B] extends mutable.Map[A, B] with mutable.MapLike[A, B, View[A, B]] {
+    implicit val impl: STMImpl
+    
     /** Returns the `TMap` perspective on this transactional map, which
      *  provides map functionality only inside atomic blocks.
      */
@@ -40,7 +47,8 @@ object TMap {
 
     override def empty: View[A, B] = TMap.empty[A, B].single
 
-    override protected[this] def newBuilder: mutable.Builder[(A, B), View[A, B]] = View.newBuilder[A, B]
+    override protected[this] def newBuilder: mutable.Builder[(A, B), View[A, B]] =
+      View.newBuilder[A, B]
   }
 
 
@@ -53,7 +61,7 @@ object TMap {
   /** Constructs and returns a new `TMap` that will contain the key/value pairs
    *  from `kvs`.
    */
-  def apply[A, B](kvs: (A, B)*): TMap[A, B] = (newBuilder[A, B] ++= kvs).result()
+  def apply[A, B](kvs: (A, B)*)(implicit impl: STMImpl): TMap[A, B] = (newBuilder[A, B] ++= kvs).result()
 
 
   /** Allows a `TMap` in a transactional context to be used as a `Map`. */
